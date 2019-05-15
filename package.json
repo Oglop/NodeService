@@ -1,0 +1,24 @@
+{
+  "name": "nodeservice",
+  "version": "1.0.0",
+  "description": "node service",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Oglop/NodeService.git"
+  },
+  "keywords": [
+    "node",
+    "http",
+    "api"
+  ],
+  "author": "Stefan Gustavsson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Oglop/NodeService/issues"
+  },
+  "homepage": "https://github.com/Oglop/NodeService#readme"
+}
