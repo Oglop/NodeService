@@ -12,9 +12,9 @@ const port = process.env.PORT || 8080;
  * @param {*} family 
  */
 async function ValidateCard(family){
+    
 
-
-    return true;
+    return 1;
 }
 
 /**
@@ -35,7 +35,7 @@ async function LookupCard(sender)
  */
 async function GetEncryptedLink(family)
 {
-    const encryption = require('./api/routes/encryption.js');
+    const encryption = require('./lib/encryption.js');
     console.log(family);
     console.log('async function GetLink(family)');
     return `link: ${family}`;
@@ -46,9 +46,11 @@ async function GetEncryptedLink(family)
  * @param {*} region 
  * @param {*} status 
  */
-async function GetResponseMessage(link, status, obj)
+async function GetResponseMessage(link, region, language, status)
 {
-    const language = require('./factory/MessageFactory.js');
+    const languageFactory = require('./factory/messageFactory.js');
+    const message = languageFactory.getMessage(link, region, language, status);
+    return message;
     
 }
 /**
@@ -68,6 +70,13 @@ async function RespondToLekab(link, sender, message)
  */
 const server = http.createServer(async (req, res) => {
     var obj ='';
+    var url = require('url');
+    var parsedUrl = url.parse(req.url, true);
+
+    let params = parsedUrl.pathname.split('/');
+    let region = params[1];
+    let language = params[2];
+
     if(req.method == 'POST'){
         var processStart = Date.now();
         let body = '';
@@ -77,7 +86,7 @@ const server = http.createServer(async (req, res) => {
         req.on('end', async () => {
             obj = JSON.parse(body);
             console.log(obj);
-            eventEmitter.emit('event', obj, processStart);
+            eventEmitter.emit('event', obj, region, language, processStart);
         });
         res.writeHead(200, {"Content-Type" : "text/plain"});
         res.end("Ok\n");
@@ -87,7 +96,7 @@ const server = http.createServer(async (req, res) => {
 /**
  * 
  */
-eventEmitter.on('event', async function(obj, processStart){
+eventEmitter.on('event', async function(obj, region, language, processStart){
     let link;
     const pub = [{
         id: obj.id,
@@ -103,8 +112,7 @@ eventEmitter.on('event', async function(obj, processStart){
     if(status === 1){/* 1 ok, 2 nok */
         link = await GetEncryptedLink(family);
     }
-    
-    let message = await GetResponseMessage(link, status, obj);
+    let message = await GetResponseMessage(link, region, language, status);
     await RespondToLekab(link, sender, message);
 
     console.log(`roundtrip took ${Date.now() - processStart} ms.`);
