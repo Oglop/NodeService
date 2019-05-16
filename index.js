@@ -23,6 +23,7 @@ async function ValidateCard(family){
  */
 async function LookupCard(sender)
 {
+    const lookup = require('./api/routes/lookup.js');
     console.log(sender);
     console.log('async function LookupFamilyCard(sender)');
     return sender;
@@ -34,6 +35,7 @@ async function LookupCard(sender)
  */
 async function GetEncryptedLink(family)
 {
+    const encryption = require('./api/routes/encryption.js');
     console.log(family);
     console.log('async function GetLink(family)');
     return `link: ${family}`;
@@ -46,6 +48,7 @@ async function GetEncryptedLink(family)
  */
 async function GetResponseMessage(link, status, obj)
 {
+    const language = require('./factory/MessageFactory.js');
     
 }
 /**
@@ -55,34 +58,35 @@ async function GetResponseMessage(link, status, obj)
  */
 async function RespondToLekab(link, sender, message)
 {
+    const callback = require('./api/routes/callback.js');
+
     console.log('async function RespondToLekab(link, sender)');
 }
 
-
-
+/**
+ * 
+ */
 const server = http.createServer(async (req, res) => {
     var obj ='';
-    console.log('1');
     if(req.method == 'POST'){
         var processStart = Date.now();
         let body = '';
-        console.log('2');
         req.on('data', async chunk => {
-            console.log('3');
             body += chunk.toString();
         });
         req.on('end', async () => {
-            console.log('5');
             obj = JSON.parse(body);
             console.log(obj);
             eventEmitter.emit('event', obj, processStart);
         });
-        console.log('4');
         res.writeHead(200, {"Content-Type" : "text/plain"});
         res.end("Ok\n");
     }
 });
 
+/**
+ * 
+ */
 eventEmitter.on('event', async function(obj, processStart){
     let link;
     const pub = [{
@@ -104,6 +108,8 @@ eventEmitter.on('event', async function(obj, processStart){
     await RespondToLekab(link, sender, message);
 
     console.log(`roundtrip took ${Date.now() - processStart} ms.`);
+    console.log('---------------------------------------------------');
+
 });
 
 
