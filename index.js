@@ -11,7 +11,7 @@ const port = process.env.PORT || 8080;
  * 
  * @param {*} family 
  */
-async function ValidateFamilyCard(family){
+async function ValidateCard(family){
 
 
     return true;
@@ -21,7 +21,7 @@ async function ValidateFamilyCard(family){
  * 
  * @param {*} sender 
  */
-async function LookupFamilyCard(sender)
+async function LookupCard(sender)
 {
     console.log(sender);
     console.log('async function LookupFamilyCard(sender)');
@@ -94,8 +94,8 @@ eventEmitter.on('event', async function(obj, processStart){
     }];
 
     let sender = obj.sender;
-    let family = await LookupFamilyCard(sender);
-    let status = await ValidateFamilyCard(family);
+    let family = await LookupCard(sender);
+    let status = await ValidateCard(family);
     if(status === 1){/* 1 ok, 2 nok */
         link = await GetEncryptedLink(family);
     }
