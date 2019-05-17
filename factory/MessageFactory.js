@@ -35,7 +35,7 @@ async function getMessage(link, obj, language, status, RespondToProvider){
         catch(err){
             console.log('Error parsing JSON string:', err);
         }
-    }).then(await RespondToProvider(msg, obj));
+    });
 }
 
 module.exports.getMessage = getMessage;
