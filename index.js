@@ -58,10 +58,20 @@ async function GetResponseMessage(link, region, language, status)
  * @param {*} link 
  * @param {*} sender 
  */
-async function RespondToLekab(link, sender, message)
+async function RespondToProvider(link, sender, message, obj)
 {
+    //{"id":"19334","sender":"12345678900","recipient":"70303","message":"I am a little teapot","conversation":"","time":"2009-02-14T00:31:30"} 
     const callback = require('./api/routes/callback.js');
-
+    var data = {
+        id: obj.id,
+        sender: obj.sender,
+        recipient: obj.recipient,
+        message: message,
+        conversation: "",
+        time: Date.now().toISOString()
+    }
+   
+    await callback.callbackToProvider(data);
     console.log('async function RespondToLekab(link, sender)');
 }
 
@@ -98,7 +108,7 @@ const server = http.createServer(async (req, res) => {
  */
 eventEmitter.on('event', async function(obj, region, language, processStart){
     let link;
-    const pub = [{
+    let callbackObj = [{
         id: obj.id,
         sender: obj.sender,
         recipient: obj.recipient,
@@ -112,8 +122,11 @@ eventEmitter.on('event', async function(obj, region, language, processStart){
     if(status === 1){/* 1 ok, 2 nok */
         link = await GetEncryptedLink(family);
     }
+    
     let message = await GetResponseMessage(link, region, language, status);
-    await RespondToLekab(link, sender, message);
+    
+    await RespondToProvider(link, sender, message, obj);
+
 
     console.log(`roundtrip took ${Date.now() - processStart} ms.`);
     console.log('---------------------------------------------------');
