@@ -14,13 +14,12 @@ async function callbackToProvider(obj){
         body: obj
     }, function (error, response, body){
         if(!error && response.statusCode == 200){
-            return response.statusCode
+            return 200;
         }
         else{
-            response.statusCode
+            return 400;
         }
     });
-
 }
 
 module.exports.callbackToProvider = callbackToProvider;

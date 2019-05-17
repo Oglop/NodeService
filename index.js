@@ -2,6 +2,11 @@
 /*
 
  */
+const languageFactory = require('./factory/messageFactory.js');
+const lookup = require('./api/routes/lookup.js');
+const encryption = require('./lib/encryption.js');
+const callback = require('./api/routes/callback.js');
+const dateHelper = require('./lib/dateHelper.js');
 const events = require('events');
 const eventEmitter = new events.EventEmitter();
 const http = require('http');
@@ -23,10 +28,7 @@ async function ValidateCard(family){
  */
 async function LookupCard(sender)
 {
-    const lookup = require('./api/routes/lookup.js');
-    console.log(sender);
-    console.log('async function LookupFamilyCard(sender)');
-    return sender;
+    return '123456789456123';
 }
 
 /**
@@ -35,10 +37,10 @@ async function LookupCard(sender)
  */
 async function GetEncryptedLink(family)
 {
-    const encryption = require('./lib/encryption.js');
+
     console.log(family);
     console.log('async function GetLink(family)');
-    return `link: ${family}`;
+    return `https://testproject-239016.appspot.com/?familyid=${family}`;
 }
 
 /**
@@ -46,33 +48,31 @@ async function GetEncryptedLink(family)
  * @param {*} region 
  * @param {*} status 
  */
-async function GetResponseMessage(link, region, language, status)
+async function GetResponseMessage(link, obj, language, status, RespondToProvider)
 {
-    const languageFactory = require('./factory/messageFactory.js');
-    const message = languageFactory.getMessage(link, region, language, status);
-    return message;
-    
+    console.log('await languageFactory.getMessage(link, obj, language, status, RespondToProvider);');
+    await languageFactory.getMessage(link, obj, language, status, RespondToProvider);
 }
 /**
  * 
- * @param {*} link 
- * @param {*} sender 
+ * @param {*} message 
+ * @param {*} obj 
  */
-async function RespondToProvider(link, sender, message, obj)
+async function RespondToProvider(message, obj)
 {
-    //{"id":"19334","sender":"12345678900","recipient":"70303","message":"I am a little teapot","conversation":"","time":"2009-02-14T00:31:30"} 
-    const callback = require('./api/routes/callback.js');
+    const dateString = await dateHelper.getDateAsString();
     var data = {
         id: obj.id,
         sender: obj.sender,
         recipient: obj.recipient,
         message: message,
         conversation: "",
-        time: Date.now().toISOString()
+        time: dateString
     }
-   
-    await callback.callbackToProvider(data);
-    console.log('async function RespondToLekab(link, sender)');
+
+    var status = await callback.callbackToProvider(data);
+    console.log(`provider status was: ${status}.`)
+    console.log('async function RespondToProvider(message, obj)');
 }
 
 /**
@@ -108,26 +108,17 @@ const server = http.createServer(async (req, res) => {
  */
 eventEmitter.on('event', async function(obj, region, language, processStart){
     let link;
-    let callbackObj = [{
-        id: obj.id,
-        sender: obj.sender,
-        recipient: obj.recipient,
-        message: obj.message,
-        time: obj.time
-    }];
 
     let sender = obj.sender;
     let family = await LookupCard(sender);
     let status = await ValidateCard(family);
     if(status === 1){/* 1 ok, 2 nok */
         link = await GetEncryptedLink(family);
+        console.log(link);
     }
+    await GetResponseMessage(link, obj, language, status, RespondToProvider);
+    //RespondToProvider(link, sender, message, obj);
     
-    let message = await GetResponseMessage(link, region, language, status);
-    
-    await RespondToProvider(link, sender, message, obj);
-
-
     console.log(`roundtrip took ${Date.now() - processStart} ms.`);
     console.log('---------------------------------------------------');
 
